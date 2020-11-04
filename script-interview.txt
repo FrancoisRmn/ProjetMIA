@@ -1,0 +1,22 @@
+Interview Quidditch:
+
+-Introduction:
+	-Réglages audio, enregistrement (demander accord), demander si la personne a un balai
+	-nom, prenom, âge, occupation
+	-"Tu connais le quidditch?"
+		-Expliquer sinon
+
+-Expliquer le contexte
+	-Application utilisant un bracelet qui capte les mouvements
+	-Reproduire un jeu type quidditch
+	-On étudie les possibilités de gestes
+
+-Pour chaque geste (se déplacer, attraper/lancer souaffle, taper cognard gauche/droite, attraper le vif d'or)
+	-Demander une première proposition sur base de l'intuition
+	-Passer l'extrait du film
+	-Demander une deuxième proposition
+	-(Proposer notre geste)
+
+-Conclusion
+	-Demander si la personne souhaite ajouter quelque chose
+	-Remerciements
