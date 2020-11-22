@@ -18,6 +18,7 @@ allprojects {
         jcenter()
         // used to find kinemic-sdk development versions
         maven {url 'https://kinemic.jfrog.io/kinemic/gradle-dev'}
+        maven { url 'https://jitpack.io' }
     }
 }
 

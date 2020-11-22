@@ -40,4 +40,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'de.kinemic:gesture-sdk:1.1.0-dev.22'
     implementation 'de.kinemic:gesture-common:1.1.0-dev.22'
+    implementation 'com.github.cluelab:dollar-recognizers-java:7a99d8b58c'
 }

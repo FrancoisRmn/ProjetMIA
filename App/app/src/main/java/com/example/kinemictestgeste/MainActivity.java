@@ -6,6 +6,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 
+import com.github.cluelab.dollar.Point;
+import com.github.cluelab.dollar.PointCloudRecognizerPlus;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -37,13 +39,16 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
     private FloatingActionButton mFabButton;
 
     private boolean airmouseActive = false;
-    private boolean airmouseValid = false;
+    private final boolean airmouseValid = false;
     private float airmouseX, airmouseY;
-    private AirmousePalmDirection airmouseMode = AirmousePalmDirection.INCONCLUSIVE;
+    private final AirmousePalmDirection airmouseMode = AirmousePalmDirection.INCONCLUSIVE;
 
-    private ArrayList<Movement> movementsList = new ArrayList<>();
+    private final ArrayList<Movement> movementsList = new ArrayList<>();
     private int i = 0;
     private int iMove = 0;
+
+    private com.github.cluelab.dollar.Gesture[] trainingSet;
+    private final Point[] points = new Point[50];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +66,7 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
 
         mFabButton = findViewById(R.id.fabSensor);
 
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             BandFloatingActionButtonFragment bandFabFragment = BandFloatingActionButtonFragment.newInstance(BandFloatingActionButtonFragment.ConnectMode.CHOOSE);
             getSupportFragmentManager().beginTransaction().add(bandFabFragment, "band_fab").commit();
             bandFabFragment.setFloatingActionButton(mFabButton);
@@ -69,13 +74,18 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
             GestureFloatingActionButtonFragment gestureFabFragmentDark = GestureFloatingActionButtonFragment.newInstance(true);
             getSupportFragmentManager().beginTransaction().add(gestureFabFragmentDark, "gesture_fab_dark").commit();
             gestureFabFragmentDark.setFloatingActionButton(fab);
-        }else{
+        } else {
             BandFloatingActionButtonFragment bandFabFragment = (BandFloatingActionButtonFragment) getSupportFragmentManager().findFragmentByTag("band_fab");
             if (bandFabFragment != null) bandFabFragment.setFloatingActionButton(mFabButton);
 
             GestureFloatingActionButtonFragment gestureFabFragmentDark = (GestureFloatingActionButtonFragment) getSupportFragmentManager().findFragmentByTag("gesture_fab_dark");
             if (gestureFabFragmentDark != null) gestureFabFragmentDark.setFloatingActionButton(fab);
         }
+
+        trainingSet = new com.github.cluelab.dollar.Gesture[]{
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(30, 7, 1), new Point(103, 7, 1), new Point(66, 7, 2), new Point(66, 87, 2)}, "T"),
+                /* todo ajouter les mouvements ici*/
+        };
     }
 
     @Override
@@ -120,6 +130,7 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
     public void onActivationStateChanged(@NonNull ActivationState state) {
         Log.i(TAG, "activation state changed: " + state);
     }
+
     @Override
     public void onConnectionStateChanged(@NonNull ConnectionState state, @NonNull ConnectionReason reason) {
         Log.i(TAG, "connection state changed: " + state.toString() + " (" + reason.toString() + ")");
@@ -145,53 +156,63 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
 
     @Override
     public void onMove(float x, float y, float wrist_angle, @NonNull AirmousePalmDirection facing) {
-        if(i == 0) {
-            movementsList.add(new Movement(x, y, wrist_angle, facing));
-            Log.i(TAG, "onMove: " + x + ", " + y + ", " +"Wrist angle: "+wrist_angle+"Facing: "+  facing);
-            detectMovement(movementsList);
+        if (i == 0) {
+            //movementsList.add(new Movement(x, y, wrist_angle, facing));
+            Log.i(TAG, "onMove: " + x + ", " + y + ", " + "Wrist angle: " + wrist_angle + "Facing: " + facing);
+            //detectMovement(movementsList);
+            // acquire gesture points from user and construct the candidate gesture
+            points[points.length] = new Point(x, y, iMove);
+            iMove++;
             i = 5;
         }
         i--;
-        if(movementsList.size() == 100){
+        if (points.length == 50) {
             mEngine.stopAirmouse();
-            movementsList.clear();
+           //movementsList.clear();
+            com.github.cluelab.dollar.Gesture candidate = new com.github.cluelab.dollar.Gesture(points);
+
+// classify the candidate gesture with the preferred recognizer
+// $P+
+            String gestureClass = PointCloudRecognizerPlus.Classify(candidate, trainingSet);
+
+            Log.i(TAG, "Gesture :" + gestureClass);
         }
 
     }
 
-    public void detectMovement(ArrayList<Movement> movementsList){
-        if(movementsList.size() == 1){
-            Log.i(TAG, "Start position");
-        }else{
-            float distanceX;
-            float distanceY;
-            final int DISTANCE_BETWEEN_MVMT = 5;
-            Movement movementA = movementsList.get(iMove);
-            iMove++;
-            Movement movementB = movementsList.get(iMove);
-
-            distanceX = Math.abs(movementA.getX()) - Math.abs(movementB.getX());
-            distanceY = Math.abs(movementA.getY()) - Math.abs(movementB.getY());
-
-            if(distanceX < DISTANCE_BETWEEN_MVMT && distanceX > -DISTANCE_BETWEEN_MVMT){
-                Log.i(TAG, "Not moving X axes");
-            }else{
-                if(movementA.getX() > movementB.getX()){
-                    Log.i(TAG, "Going left");
-                }else
-                    Log.i(TAG, "Going right");
-            }
-
-            if(distanceY < DISTANCE_BETWEEN_MVMT && distanceY > -DISTANCE_BETWEEN_MVMT){
-                Log.i(TAG, "Not moving Y axes");
-            }else{
-                if(movementA.getY() > movementB.getY()){
-                    Log.i(TAG, "Going down");
-                }else
-                    Log.i(TAG, "Going up");
-            }
-        }
-    }
+//    public void detectMovement(ArrayList<Movement> movementsList) {
+//        if (movementsList.size() == 1) {
+//            Log.i(TAG, "Start position");
+//        } else {
+//            float distanceX;
+//            float distanceY;
+//            final int DISTANCE_BETWEEN_MVMT = 5;
+//            Movement movementA = movementsList.get(iMove);
+//            iMove++;
+//            Movement movementB = movementsList.get(iMove);
+//
+//            distanceX = Math.abs(movementA.getX()) - Math.abs(movementB.getX());
+//            distanceY = Math.abs(movementA.getY()) - Math.abs(movementB.getY());
+//
+//            if (distanceX < DISTANCE_BETWEEN_MVMT && distanceX > -DISTANCE_BETWEEN_MVMT) {
+//                Log.i(TAG, "Not moving X axes");
+//            } else {
+//                if (movementA.getX() > movementB.getX()) {
+//                    Log.i(TAG, "Going left");
+//                } else
+//                    Log.i(TAG, "Going right");
+//            }
+//
+//            if (distanceY < DISTANCE_BETWEEN_MVMT && distanceY > -DISTANCE_BETWEEN_MVMT) {
+//                Log.i(TAG, "Not moving Y axes");
+//            } else {
+//                if (movementA.getY() > movementB.getY()) {
+//                    Log.i(TAG, "Going down");
+//                } else
+//                    Log.i(TAG, "Going up");
+//            }
+//        }
+//    }
 
     @Override
     public void onClick() {
