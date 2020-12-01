@@ -2,6 +2,7 @@ package com.example.kinemictestgeste;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
@@ -61,10 +62,15 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
         assert mEngine != null;
         mEngine.setRequiredGesturePrecision(RequiredGesturePrecision.LOOSE);
 
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-
         mFabButton = findViewById(R.id.fabSensor);
+
+        ListView listView = (ListView)findViewById(R.id.list);
+
+        MessageAdapter messageAdapter = new MessageAdapter(this);
+
+        listView.setAdapter(messageAdapter);
+
+        messageAdapter.add("Bienvenue dans QuidditchGO");
 
         if (savedInstanceState == null) {
             BandFloatingActionButtonFragment bandFabFragment = BandFloatingActionButtonFragment.newInstance(BandFloatingActionButtonFragment.ConnectMode.CHOOSE);
@@ -73,13 +79,10 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
 
             GestureFloatingActionButtonFragment gestureFabFragmentDark = GestureFloatingActionButtonFragment.newInstance(true);
             getSupportFragmentManager().beginTransaction().add(gestureFabFragmentDark, "gesture_fab_dark").commit();
-            gestureFabFragmentDark.setFloatingActionButton(fab);
+
         } else {
             BandFloatingActionButtonFragment bandFabFragment = (BandFloatingActionButtonFragment) getSupportFragmentManager().findFragmentByTag("band_fab");
             if (bandFabFragment != null) bandFabFragment.setFloatingActionButton(mFabButton);
-
-            GestureFloatingActionButtonFragment gestureFabFragmentDark = (GestureFloatingActionButtonFragment) getSupportFragmentManager().findFragmentByTag("gesture_fab_dark");
-            if (gestureFabFragmentDark != null) gestureFabFragmentDark.setFloatingActionButton(fab);
         }
 
         trainingSet = new com.github.cluelab.dollar.Gesture[]{
