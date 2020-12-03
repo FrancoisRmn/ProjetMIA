@@ -37,26 +37,18 @@ import de.kinemic.gesture.common.fragments.BandFloatingActionButtonFragment;
 import de.kinemic.gesture.common.fragments.GestureFloatingActionButtonFragment;
 
 public class MainActivity extends EngineActivity implements OnActivationStateChangeListener,
-        OnBatteryChangeListener, OnConnectionStateChangeListener, OnGestureListener, OnStreamQualityChangeListener, OnAirmouseEventListener {
+        OnConnectionStateChangeListener, OnGestureListener, OnAirmouseEventListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private Engine mEngine;
-
     private FloatingActionButton mFabButton;
     private Button startButton;
-
     private boolean airmouseActive = false;
-    private final boolean airmouseValid = false;
-    private float airmouseX, airmouseY;
-    private final AirmousePalmDirection airmouseMode = AirmousePalmDirection.INCONCLUSIVE;
-
-    private final ArrayList<Movement> movementsList = new ArrayList<>();
     private int i = 0;
-    private int iMove = 0;
 
     private com.github.cluelab.dollar.Gesture[] trainingSet;
-    private final Point[] points = new Point[500];
+    private ArrayList<Point>points = new ArrayList<>();
 
     private MessageAdapter messageAdapter;
 
@@ -64,6 +56,7 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -79,7 +72,7 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
         messageAdapter.add("Bienvenue dans QuidditchGO");
 
         startButton = findViewById(R.id.startButton);
-        //startButton.setVisibility(View.INVISIBLE);
+        startButton.setVisibility(View.INVISIBLE);
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -101,16 +94,20 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
         }
 
         trainingSet = new com.github.cluelab.dollar.Gesture[]{
-                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(30, 7, 1), new Point(103, 7, 1), new Point(66, 7, 1), new Point(66, 87, 1)}, "T"),
-                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(30, 7, 1), new Point(103, 7, 1), new Point(66, 7, 1), new Point(66, 87, 1)}, Constant.DROITE),
-                /* todo ajouter les mouvements ici*/
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(50, 0, 1)}, Constant.DROITE),
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(-50, 0, 1)}, Constant.GAUCHE),
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(0, -50, 1)}, Constant.BAS),
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(0, 50, 1)}, Constant.HAUT),
+
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(50, 50, 1)}, Constant.ATTRAPER),
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(50, 50, 1), new Point(-50,-50,1)}, Constant.LANCER),
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1),new Point(50, 0, 1), new Point(-50, 0, 1)}, Constant.COUPBATTE),
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1),new Point(-50, 50, 1),new Point(50, 50, 1),new Point(-50, -50, 1),new Point(50, -50, 1),}, Constant.VIFDOR),
         };
     }
 
     @Override
     protected void onPause() {
-        mEngine.unregisterOnBatteryChangeListener(this);
-        mEngine.unregisterOnStreamQualityChangeListener(this);
         mEngine.unregisterOnActivationStateChangeListener(this);
         mEngine.unregisterOnConnectionStateChangeListener(this);
         mEngine.unregisterOnGestureListener(this);
@@ -126,22 +123,10 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
 
         mEngine = getEngine();
         checkPermissions();
-        mEngine.registerOnBatteryChangeListener(this);
-        mEngine.registerOnStreamQualityChangeListener(this);
         mEngine.registerOnActivationStateChangeListener(this);
         mEngine.registerOnConnectionStateChangeListener(this);
         mEngine.registerOnAirmouseEventListener(this);
         mEngine.registerOnGestureListener(this);
-    }
-
-    @Override
-    public void onBatteryChanged(int batteryPercent, boolean charging, boolean powered) {
-        Log.i(TAG, "battery changed: " + batteryPercent + " (charging: " + charging + ")");
-    }
-
-    @Override
-    public void onStreamQualityChanged(int quality) {
-        Log.i(TAG, "Stream Quality changed: " + quality);
     }
 
     @Override
@@ -158,20 +143,7 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
 
     @Override
     public void onGesture(@NonNull Gesture gesture) {
-        mEngine.vibrate(150);
         Log.i(TAG, "got gesture: " + gesture);
-
-        if (gesture == Gesture.ROTATE_RL) {
-            if (airmouseActive) return;
-            airmouseActive = true;
-            mEngine.startAirmouse();
-            Log.d(TAG, "airmouse started");
-        } else if (gesture == Gesture.ROTATE_LR) {
-            if (!airmouseActive) return;
-            airmouseActive = false;
-            mEngine.stopAirmouse();
-            Log.d(TAG, "airmouse stopped");
-        }
     }
 
     @Override
@@ -181,8 +153,7 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
             Log.i(TAG, "onMove: " + x + ", " + y + ", " + "Wrist angle: " + wrist_angle + "Facing: " + facing);
             //detectMovement(movementsList);
             // acquire gesture points from user and construct the candidate gesture
-            points[points.length] = new Point(x, y, iMove);
-            iMove++;
+            points.add(new Point(x, y, 1));
             i = 5;
         }
         i--;
@@ -230,7 +201,13 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
     public void startGame() {
         messageAdapter.add("Le match va commencer !!!!!");
         startButton.setVisibility(View.INVISIBLE);
-        findMove("Cognare à droite", Constant.DROITE);
+        findMove("Cognard à droite !! Allez à gauche !", Constant.GAUCHE);
+        findMove("Cognard en haut !! Baissez-vous", Constant.BAS);
+        findMove("Passe de votre poursuiveur !! Attrappez le souaffle", Constant.ATTRAPER);
+        findMove("Lancez la balle pour faire une passe", Constant.LANCER);
+        findMove("Un cognard arrive !! Donnez un coup de batte", Constant.COUPBATTE);
+        findMove("Le vif d'or zigzague devant vous ! Formez un Z pour l'attraper", Constant.VIFDOR);
+        messageAdapter.add("Le match est gagné ! Bien joué !!!");
     }
 
     public void findMove(String message, String move) {
@@ -242,29 +219,27 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
             }
             @Override
             public void onFinish() {
-                messageAdapter.add("go");
-                //mEngine.startAirmouse();
+                messageAdapter.add("Faites le bon geste");
+                mEngine.startAirmouse();
                 final Handler handler = new Handler(Looper.getMainLooper());
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        //mEngine.stopAirmouse();
+                        mEngine.stopAirmouse();
 
-                        //com.github.cluelab.dollar.Gesture candidate = new com.github.cluelab.dollar.Gesture(points);
+                        com.github.cluelab.dollar.Gesture candidate = new com.github.cluelab.dollar.Gesture((Point[]) points.toArray());
+                        String mouvementRecognise = PointCloudRecognizerPlus.Classify(candidate, trainingSet);
+                        Log.i(TAG, "Mouvement reconnu: " + mouvementRecognise);
 
-// classify the candidate gesture with the preferred recognizer
-// $P+
-                        //String mouvementRecognise = PointCloudRecognizerPlus.Classify(candidate, trainingSet);
-
-                        String mouvementRecognise ="";
                         if(mouvementRecognise.equals(move)){
-                            messageAdapter.add("gg");
+                            mEngine.vibrate(150);
+                            messageAdapter.add("Mouvement réussi");
                         }else{
                             messageAdapter.add("Recommencez");
                             findMove(message, move);
                         }
                     }
-                }, 5500);
+                }, 5000);
             }
         };
         timer.start();
