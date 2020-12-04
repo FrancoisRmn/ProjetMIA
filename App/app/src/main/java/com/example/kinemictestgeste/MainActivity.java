@@ -44,18 +44,26 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
     private Engine mEngine;
     private FloatingActionButton mFabButton;
     private Button startButton;
-    private boolean airmouseActive = false;
     private int i = 0;
 
     private com.github.cluelab.dollar.Gesture[] trainingSet;
-    private ArrayList<Point>points = new ArrayList<>();
+    private Point[] points = new Point[50];
+    private int iPoint = 0;
+
+    private ArrayList<Movement> mouvements;
+    private int currentMovement = 0;
 
     private MessageAdapter messageAdapter;
+
+    public MainActivity() {
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        initMovement();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -95,15 +103,25 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
 
         trainingSet = new com.github.cluelab.dollar.Gesture[]{
                 new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(50, 0, 1)}, Constant.DROITE),
-                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(-50, 0, 1)}, Constant.GAUCHE),
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(-30, 0, 1)}, Constant.GAUCHE),
                 new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(0, -50, 1)}, Constant.BAS),
                 new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(0, 50, 1)}, Constant.HAUT),
 
-                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(50, 50, 1)}, Constant.ATTRAPER),
-                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(50, 50, 1), new Point(-50,-50,1)}, Constant.LANCER),
-                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1),new Point(50, 0, 1), new Point(-50, 0, 1)}, Constant.COUPBATTE),
-                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1),new Point(-50, 50, 1),new Point(50, 50, 1),new Point(-50, -50, 1),new Point(50, -50, 1),}, Constant.VIFDOR),
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(25, 75, 1)}, Constant.ATTRAPER),
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(-75, -100, 1)}, Constant.LANCER),
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(50, 0, 1), new Point(-50, 0, 1)}, Constant.COUPBATTE),
+                new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(-50, 50, 1), new Point(50, 50, 1), new Point(-50, -50, 1), new Point(50, -50, 1),}, Constant.VIFDOR),
         };
+    }
+
+    private void initMovement() {
+        mouvements = new ArrayList<>();
+        mouvements.add(new Movement("Cognard à droite !! Allez à gauche !", Constant.GAUCHE));
+        mouvements.add(new Movement("Cognard en haut !! Baissez-vous", Constant.BAS));
+        mouvements.add(new Movement("Passe de votre poursuiveur !! Attrappez le souaffle", Constant.ATTRAPER));
+        mouvements.add(new Movement("Lancez la balle pour faire une passe", Constant.LANCER));
+        mouvements.add(new Movement("Un cognard arrive !! Donnez un coup de batte", Constant.COUPBATTE));
+        mouvements.add(new Movement("Le vif d'or zigzague devant vous ! Formez un Z pour l'attraper", Constant.VIFDOR));
     }
 
     @Override
@@ -153,45 +171,17 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
             Log.i(TAG, "onMove: " + x + ", " + y + ", " + "Wrist angle: " + wrist_angle + "Facing: " + facing);
             //detectMovement(movementsList);
             // acquire gesture points from user and construct the candidate gesture
-            points.add(new Point(x, y, 1));
+            if (iPoint < 50) {
+                points[iPoint] = (new Point(x, y, 1));
+                iPoint++;
+            } else {
+                Log.i("Points overflow", "Trop de points");
+            }
             i = 5;
         }
         i--;
     }
 
-//    public void detectMovement(ArrayList<Movement> movementsList) {
-//        if (movementsList.size() == 1) {
-//            Log.i(TAG, "Start position");
-//        } else {
-//            float distanceX;
-//            float distanceY;
-//            final int DISTANCE_BETWEEN_MVMT = 5;
-//            Movement movementA = movementsList.get(iMove);
-//            iMove++;
-//            Movement movementB = movementsList.get(iMove);
-//
-//            distanceX = Math.abs(movementA.getX()) - Math.abs(movementB.getX());
-//            distanceY = Math.abs(movementA.getY()) - Math.abs(movementB.getY());
-//
-//            if (distanceX < DISTANCE_BETWEEN_MVMT && distanceX > -DISTANCE_BETWEEN_MVMT) {
-//                Log.i(TAG, "Not moving X axes");
-//            } else {
-//                if (movementA.getX() > movementB.getX()) {
-//                    Log.i(TAG, "Going left");
-//                } else
-//                    Log.i(TAG, "Going right");
-//            }
-//
-//            if (distanceY < DISTANCE_BETWEEN_MVMT && distanceY > -DISTANCE_BETWEEN_MVMT) {
-//                Log.i(TAG, "Not moving Y axes");
-//            } else {
-//                if (movementA.getY() > movementB.getY()) {
-//                    Log.i(TAG, "Going down");
-//                } else
-//                    Log.i(TAG, "Going up");
-//            }
-//        }
-//    }
 
     @Override
     public void onClick() {
@@ -201,13 +191,14 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
     public void startGame() {
         messageAdapter.add("Le match va commencer !!!!!");
         startButton.setVisibility(View.INVISIBLE);
-        findMove("Cognard à droite !! Allez à gauche !", Constant.GAUCHE);
-        findMove("Cognard en haut !! Baissez-vous", Constant.BAS);
-        findMove("Passe de votre poursuiveur !! Attrappez le souaffle", Constant.ATTRAPER);
-        findMove("Lancez la balle pour faire une passe", Constant.LANCER);
-        findMove("Un cognard arrive !! Donnez un coup de batte", Constant.COUPBATTE);
-        findMove("Le vif d'or zigzague devant vous ! Formez un Z pour l'attraper", Constant.VIFDOR);
-        messageAdapter.add("Le match est gagné ! Bien joué !!!");
+        nextMove();
+    }
+
+    private void nextMove() {
+        if (currentMovement > mouvements.size() - 1)
+            messageAdapter.add("Le match est gagné ! Bien joué !!!");
+        else
+            findMove(mouvements.get(currentMovement).getMesssage(), mouvements.get(currentMovement).getMovement());
     }
 
     public void findMove(String message, String move) {
@@ -217,6 +208,7 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
             public void onTick(long millisUntilFinished) {
                 messageAdapter.add(String.valueOf((millisUntilFinished / 1000)));
             }
+
             @Override
             public void onFinish() {
                 messageAdapter.add("Faites le bon geste");
@@ -227,14 +219,24 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
                     public void run() {
                         mEngine.stopAirmouse();
 
-                        com.github.cluelab.dollar.Gesture candidate = new com.github.cluelab.dollar.Gesture((Point[]) points.toArray());
+                        Point[] tempPoints = new Point[iPoint];
+                        for (int j = 0; j < iPoint; j++) {
+                            tempPoints[j] = points[j];
+                        }
+
+                        com.github.cluelab.dollar.Gesture candidate = new com.github.cluelab.dollar.Gesture(tempPoints);
                         String mouvementRecognise = PointCloudRecognizerPlus.Classify(candidate, trainingSet);
                         Log.i(TAG, "Mouvement reconnu: " + mouvementRecognise);
 
-                        if(mouvementRecognise.equals(move)){
-                            mEngine.vibrate(150);
+                        points = new Point[50];
+                        iPoint = 0;
+
+                        if (mouvementRecognise.equals(move)) {
+                            mEngine.vibrate(500);
                             messageAdapter.add("Mouvement réussi");
-                        }else{
+                            currentMovement++;
+                            nextMove();
+                        } else {
                             messageAdapter.add("Recommencez");
                             findMove(message, move);
                         }
