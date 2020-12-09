@@ -189,14 +189,19 @@ public class MainActivity extends EngineActivity implements OnActivationStateCha
     }
 
     public void startGame() {
+        currentMovement = 0;
         messageAdapter.add("Le match va commencer !!!!!");
         startButton.setVisibility(View.INVISIBLE);
         nextMove();
     }
 
     private void nextMove() {
-        if (currentMovement > mouvements.size() - 1)
+        if (currentMovement > mouvements.size() - 1){
             messageAdapter.add("Le match est gagné ! Bien joué !!!");
+            //le bouton pour recommencer reapparait.
+            startButton.setVisibility(View.VISIBLE);
+        }
+
         else
             findMove(mouvements.get(currentMovement).getMesssage(), mouvements.get(currentMovement).getMovement());
     }
