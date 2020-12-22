@@ -1,20 +1,16 @@
 package com.example.kinemictestgeste;
 
-import androidx.annotation.NonNull;
-
-import de.kinemic.gesture.AirmousePalmDirection;
-
 public class Movement {
-    private String messsage;
+    private String message;
     private String movement;
 
-    public Movement(String messsage, String movement) {
-        this.messsage = messsage;
+    public Movement(String message, String movement) {
+        this.message = message;
         this.movement = movement;
     }
 
-    public String getMesssage() {
-        return messsage;
+    public String getMessage() {
+        return message;
     }
 
     public String getMovement() {

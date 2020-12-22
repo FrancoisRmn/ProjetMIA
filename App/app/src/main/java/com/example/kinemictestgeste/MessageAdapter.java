@@ -13,7 +13,6 @@ import java.util.List;
 
 public class MessageAdapter extends BaseAdapter {
     List<String> strings = new ArrayList<String>();
-
     Context context;
 
     public MessageAdapter(Context context) {
@@ -22,7 +21,7 @@ public class MessageAdapter extends BaseAdapter {
 
     public void add(String string) {
         this.strings.add(string);
-        notifyDataSetChanged(); // to render the list we need to notify
+        notifyDataSetChanged();
     }
 
     @Override
