@@ -1,34 +1,18 @@
 # ProjetMIA
-Ce repository reprend le code du projet pour le cours MIA. Le projet a pour but d'utiliser des gestes pour controller une application via le bracelet [kinemic band](https://kinemic.com/en/kinemic-band/).
+Ce repository reprend le code d'un projet de simulation de quidditch ainsi que des extraits des films represantant des parties de quidditch. Le projet a pour but d'utiliser des gestes pour controller une application via le bracelet [kinemic band](https://kinemic.com/en/kinemic-band/).
 
 Le projet est développé en ***Android***.
 
 ## Description du projet
-Le personna choisi est Dumbeldore et il faut créer une application de Quiddich pour lui.
+Suite à l'arrivée du professeur Ombrage, dépêché par le ministère de la magie, à la célèbre école de sorcellerie de Poudlard, les règles anti-magie ne font que s'empiler les unes sur les autres. Bien évidemment, le professeur Dumbledore est conscient du problème à long terme que cela pourrait auser sur la scolarité de ses jeunes étuiants.
 
-Pour commencer le jeu il faut mettre debout son balai (face vers le bas en dessous à droite).
+L'échappatoire la moins risquée qu'il ait pu trouver jusqu'à maintenant, c'est d'utiliser la technologie inoffensive des moldus pour remplaer les actes interits par le ministère dans les cours.
 
-Menu de sélection au début pour choisir quel rôle on décide de jouer.
+Ici, le projet solutionne la problématique du Quidditch en proposant aux élèves de s'entrainer à réagir face à différents scénarios.
 
-### Premier rôle : Poursuiveur
+## L'application
 
- - Il faut eviter des cognards (gauche et droite)
- - Attraper le souafle -> Lever le bras au dessus a droite
- - Lancer le souafle -> Diagonale haut droite -> bas gauche
-
- ### Deuxième rôle : Batteur
-
- - Il doit taper les cognards -> Mouvement gauche / droite -> Préparation de frappe (mouvement en 2 phases)
- - Il doit se déplacer vers les cognards pour proteger les autres (mvt gauche et droite)
-
- ### Toisième rôle : Attrapeur
-
- - Il faut eviter des cognards (gauche et droite)
- - Il faut attraper le vif d'or -> mouvement poignet droit + sur une certaine coord, faut passer par la ([cf 23 sec](https://www.youtube.com/watch?v=zlA1gZAExF0&ab_channel=Kinemic))
-
-### (Quatrième rôle : Gardien)
-
-todo si besoin
+L'application va proposer un scénario au joueur et celui-ci va devoir réagir correctement en faisant les bons gestes. Ceux-ci sont captés par le bracelet, analysés par l'application et un retour est donné au joueur pour qu'il connaisse l'avancement de sa partie.
 
 ## Liens utiles
  - [API Android](https://developer.kinemic.com/docs/android/latest/api/)
