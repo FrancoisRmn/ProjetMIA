@@ -14,7 +14,9 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.kinemictestgeste.utils.Constant;
 import com.github.cluelab.dollar.Point;
+import com.github.cluelab.dollar.PointCloudRecognizer;
 import com.github.cluelab.dollar.PointCloudRecognizerPlus;
+import com.github.cluelab.dollar.QPointCloudRecognizer;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -180,13 +182,18 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
                     }
 
                     com.github.cluelab.dollar.Gesture candidate = new com.github.cluelab.dollar.Gesture(tempPoints);
-                    String mouvementRecognise = PointCloudRecognizerPlus.Classify(candidate, trainingSet); //Appelle de la librairie pour reconnaitre le mouvement
-                    Log.i(TAG, "Mouvement reconnu: " + mouvementRecognise);
+                    String movementRecognisePPlus = PointCloudRecognizerPlus.Classify(candidate, trainingSet); //Appelle de la librairie pour reconnaitre le mouvement
+                    String movementRecogniseP = PointCloudRecognizer.Classify(candidate, trainingSet); //Appelle de la librairie pour reconnaitre le mouvement
+                    String movementRecogniseQ = QPointCloudRecognizer.Classify(candidate, trainingSet); //Appelle de la librairie pour reconnaitre le mouvement
+
+                    Log.i(TAG, "Mouvement reconnu par $P+: " + movementRecognisePPlus);
+                    Log.i(TAG, "Mouvement reconnu: par $P" + movementRecogniseP);
+                    Log.i(TAG, "Mouvement reconnu: par $Q" + movementRecogniseQ);
 
                     points = new Point[50];
                     iPoint = 0;
 
-                    if (mouvementRecognise.equals(move)) {
+                    if (movementRecognisePPlus.equals(move)) {
                         bandEngine.vibrate(500);
                         messageAdapter.add("Mouvement réussi");
                         currentMovement++;
