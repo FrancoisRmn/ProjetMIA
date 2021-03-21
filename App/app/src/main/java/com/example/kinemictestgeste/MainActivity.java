@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.kinemictestgeste.utils.Constant;
+import com.github.cluelab.dollar.Gesture;
 import com.github.cluelab.dollar.Point;
 import com.github.cluelab.dollar.PointCloudRecognizer;
 import com.github.cluelab.dollar.PointCloudRecognizerPlus;
@@ -20,6 +21,7 @@ import com.github.cluelab.dollar.QPointCloudRecognizer;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import de.kinemic.gesture.AirmousePalmDirection;
 import de.kinemic.gesture.ConnectionReason;
@@ -43,6 +45,8 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
     private int iPoint = 0; //Indice du tableau points
     private int iterator = 0; //Permet de récupérer un point sur 5 parmi tous les points renvoyés par le bracelet.
     private int currentMovement = 0; //Retiens la position du geste dans le scénario
+    private ArrayList<String> librariesRecognizer = new ArrayList<String>();
+    private String currentLibrary;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +92,8 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
                 new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(50, 0, 1), new Point(-50, 0, 1)}, Constant.COUPBATTE),
                 new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(-50, 50, 1), new Point(50, 50, 1), new Point(-50, -50, 1), new Point(50, -50, 1),}, Constant.VIFDOR),
         };
+
+        fillListLibraries(librariesRecognizer);
     }
 
     private void initMovements() {
@@ -148,6 +154,8 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
         currentMovement = 0;
         messageAdapter.add("Le match va commencer !!!!!");
         startButton.setVisibility(View.INVISIBLE);
+        currentLibrary = selectLibrary(librariesRecognizer);
+        messageAdapter.add("Librairie de recognaissance utilisée "+currentLibrary);
         nextMove();
     }
 
@@ -155,6 +163,8 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
         if (currentMovement > movements.size() - 1) {
             messageAdapter.add("Le match est gagné ! Bien joué !!!");
             //le bouton pour recommencer reapparait.
+            if(librariesRecognizer.isEmpty())
+                fillListLibraries(librariesRecognizer);
             startButton.setVisibility(View.VISIBLE);
         } else
             findMove(movements.get(currentMovement).getMessage(), movements.get(currentMovement).getMovement());
@@ -182,18 +192,13 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
                     }
 
                     com.github.cluelab.dollar.Gesture candidate = new com.github.cluelab.dollar.Gesture(tempPoints);
-                    String movementRecognisePPlus = PointCloudRecognizerPlus.Classify(candidate, trainingSet); //Appelle de la librairie pour reconnaitre le mouvement
-                    String movementRecogniseP = PointCloudRecognizer.Classify(candidate, trainingSet); //Appelle de la librairie pour reconnaitre le mouvement
-                    String movementRecogniseQ = QPointCloudRecognizer.Classify(candidate, trainingSet); //Appelle de la librairie pour reconnaitre le mouvement
-
-                    Log.i(TAG, "Mouvement reconnu par $P+: " + movementRecognisePPlus);
-                    Log.i(TAG, "Mouvement reconnu: par $P" + movementRecogniseP);
-                    Log.i(TAG, "Mouvement reconnu: par $Q" + movementRecogniseQ);
+                    String movementRecognise = recognizeMove(candidate,trainingSet,"$p+");
+                    Log.i(TAG, "Mouvement reconnu par $P+: " + movementRecognise);
 
                     points = new Point[50];
                     iPoint = 0;
 
-                    if (movementRecognisePPlus.equals(move)) {
+                    if (movementRecognise.equals(move)) {
                         bandEngine.vibrate(500);
                         messageAdapter.add("Mouvement réussi");
                         currentMovement++;
@@ -206,5 +211,30 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
             }
         };
         timer.start();
+    }
+
+    private String recognizeMove(Gesture candidate, Gesture[] trainingSet, String currentLibrary){
+        switch (currentLibrary){
+            case "$p+":
+                return PointCloudRecognizerPlus.Classify(candidate, trainingSet); //Appelle de la librairie pour reconnaitre le mouvement
+            case "$p":
+                return PointCloudRecognizer.Classify(candidate, trainingSet); //Appelle de la librairie pour reconnaitre le mouvement
+            case "$q":
+                return QPointCloudRecognizer.Classify(candidate, trainingSet); //Appelle de la librairie pour reconnaitre le mouvement
+            default: return "The library doesn't exist";
+        }
+    }
+
+    private String selectLibrary(ArrayList<String> listLibrary){
+        int index = new Random().nextInt(2);
+        String library = listLibrary.get(index);
+        listLibrary.remove(index);
+        return library;
+    }
+
+    private void fillListLibraries(ArrayList<String> listLibraries){
+        listLibraries.add("$p+");
+        listLibraries.add("$p");
+        listLibraries.add("$q");
     }
 }
