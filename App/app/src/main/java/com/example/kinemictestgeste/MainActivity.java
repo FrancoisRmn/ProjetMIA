@@ -38,6 +38,9 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
 
     private Engine bandEngine;
     private Button startButton;
+    private Button buttonP;
+    private Button buttonQ;
+    private Button buttonPPlus;
     private com.github.cluelab.dollar.Gesture[] trainingSet;
     private ArrayList<Movement> movements;
     private MessageAdapter messageAdapter;
@@ -57,6 +60,9 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
         FloatingActionButton mFabButton = findViewById(R.id.fabSensor);
         ListView listView = (ListView) findViewById(R.id.list);
         startButton = findViewById(R.id.startButton);
+        buttonP = findViewById(R.id.buttonP);
+        buttonPPlus = findViewById(R.id.buttonPPlus);
+        buttonQ = findViewById(R.id.buttonQ);
 
         initMovements(); //Initialise les mouvements du scénario
 
@@ -70,7 +76,23 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
         messageAdapter.add("Bienvenue dans QuidditchGO");
 
         startButton.setVisibility(View.INVISIBLE);
-        startButton.setOnClickListener(event -> startGame());
+        startButton.setOnClickListener(event -> startGame(false));
+
+        buttonP.setVisibility(View.INVISIBLE);
+        buttonP.setOnClickListener(v -> {
+            currentLibrary = "$p";
+            startGame(true);
+        });
+        buttonPPlus.setVisibility(View.INVISIBLE);
+        buttonPPlus.setOnClickListener(v -> {
+            currentLibrary = "$p+";
+            startGame(true);
+        });
+        buttonQ.setVisibility(View.INVISIBLE);
+        buttonQ.setOnClickListener(v -> {
+            currentLibrary = "$q";
+            startGame(true);
+        });
 
         if (savedInstanceState == null) { //Ajoute le fragment fourni par la librairie pour connecter le bracelet
             BandFloatingActionButtonFragment bandFabFragment = BandFloatingActionButtonFragment.newInstance(BandFloatingActionButtonFragment.ConnectMode.CHOOSE);
@@ -92,7 +114,6 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
                 new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(50, 0, 1), new Point(-50, 0, 1)}, Constant.COUPBATTE),
                 new com.github.cluelab.dollar.Gesture(new Point[]{new Point(0, 0, 1), new Point(-50, 50, 1), new Point(50, 50, 1), new Point(-50, -50, 1), new Point(50, -50, 1),}, Constant.VIFDOR),
         };
-
         fillListLibraries(librariesRecognizer);
     }
 
@@ -125,8 +146,12 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
 
     @Override
     public void onConnectionStateChanged(@NonNull ConnectionState state, @NonNull ConnectionReason reason) {
-        if (state == ConnectionState.CONNECTED)
+        if (state == ConnectionState.CONNECTED){
             startButton.setVisibility(View.VISIBLE);
+            buttonPPlus.setVisibility(View.VISIBLE);
+            buttonP.setVisibility(View.VISIBLE);
+            buttonQ.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -150,11 +175,15 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
 
     }
 
-    public void startGame() {
+    public void startGame(boolean isLibraryDefined) {
         currentMovement = 0;
         messageAdapter.add("Le match va commencer !!!!!");
         startButton.setVisibility(View.INVISIBLE);
-        currentLibrary = selectLibrary(librariesRecognizer);
+        buttonPPlus.setVisibility(View.INVISIBLE);
+        buttonP.setVisibility(View.INVISIBLE);
+        buttonQ.setVisibility(View.INVISIBLE);
+        if(!isLibraryDefined)
+            currentLibrary = selectLibrary(librariesRecognizer);
         messageAdapter.add("Librairie de recognaissance utilisée "+currentLibrary);
         nextMove();
     }
@@ -166,6 +195,9 @@ public class MainActivity extends EngineActivity implements OnConnectionStateCha
             if(librariesRecognizer.isEmpty())
                 fillListLibraries(librariesRecognizer);
             startButton.setVisibility(View.VISIBLE);
+            buttonPPlus.setVisibility(View.VISIBLE);
+            buttonP.setVisibility(View.VISIBLE);
+            buttonQ.setVisibility(View.VISIBLE);
         } else
             findMove(movements.get(currentMovement).getMessage(), movements.get(currentMovement).getMovement());
     }
